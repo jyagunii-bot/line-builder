@@ -953,18 +953,8 @@ function generatePostText() {
   const r = activeRace(); if (!r) return "";
   let t = "";
   const title = [r.name, r.num, r.grade].filter(Boolean).join(" ");
-  if (title) t += `【${title}】\n\n`;
-  t += "■ライン平均得点\n";
-  r.lines.forEach(l => {
-    if (!l.ps.length) return;
-    const members = l.ps.map(id => { const p = r.players.find(x => x.id === id); return p ? p.name : ""; }).join("-");
-    const sc = lineScore(l);
-    t += `${l.nm}（${members}）：${sc !== null ? sc.toFixed(1) : "-"}\n`;
-  });
-  if (r.memo.trim()) {
-    t += `\n■見立て\n${r.memo.trim()}\n`;
-  }
-  t += `\n${SITE_URL}`;
+  if (title) t += `【${title}】\n`;
+  t += `\n#10KLB\n${SITE_URL}`;
   return t;
 }
 
@@ -973,9 +963,6 @@ function generateXPostText() {
   let t = "";
   const title = [r.name, r.num, r.grade].filter(Boolean).join(" ");
   if (title) t += `【${title}】\n`;
-  if (r.memo.trim()) {
-    t += `\n${r.memo.trim()}\n`;
-  }
   t += `\n#10KLB\n${SITE_URL}`;
   return t;
 }
