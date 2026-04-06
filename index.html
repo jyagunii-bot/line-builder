@@ -9,8 +9,8 @@
 <meta property="og:title" content="10K Line Builder（ラインビルダー）｜競輪のライン構成・並び予想ツール【無料】">
 <meta property="og:description" content="競輪の並び予想を自分で組んでライン別の平均競走得点を比較。S級・A級選手DB搭載、画像保存・X共有対応の無料ツール。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://example.com">
-<meta property="og:image" content="https://example.com/ogp.png">
+<meta property="og:url" content="https://line-builder.vercel.app">
+<meta property="og:image" content="https://line-builder.vercel.app/ogp.png">
 <meta property="og:site_name" content="10K Line Builder">
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
@@ -18,7 +18,7 @@
 <meta name="twitter:creator" content="@armsdealer666_">
 <meta name="twitter:title" content="10K Line Builder（ラインビルダー）｜競輪のライン構成・並び予想ツール【無料】">
 <meta name="twitter:description" content="競輪の並び予想を自分で組んでライン別の平均競走得点を比較。S級・A級選手DB搭載の無料ツール。">
-<link rel="canonical" href="https://example.com">
+<link rel="canonical" href="https://line-builder.vercel.app">
 <title>10K Line Builder｜競輪のライン構成・並び予想ツール【無料】</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -240,7 +240,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#e5243a}
         </div>
         <div class="lines-container" id="linesContainer"></div>
         <div class="strength-bars" id="strengthBars"></div>
-        <div class="watermark" style="text-align:right;font-size:10px;color:#aaa;margin-top:8px;padding-top:4px">10K Line Builder｜https://example.com</div>
+        <div class="watermark" style="text-align:right;font-size:10px;color:#aaa;margin-top:8px;padding-top:4px">10K Line Builder｜https://line-builder.vercel.app</div>
       </div>
       <div class="pool-area">
         <div class="pool-label">未配置の選手（PCはドラッグで配置 / スマホはタップで選択→ラインをタップで配置）</div>
@@ -916,7 +916,7 @@ document.getElementById("postXBtn").addEventListener("click", () => {
   });
 });
 
-const SITE_URL = "https://example.com"; // ★公開時にURLを差し替え
+const SITE_URL = "https://line-builder.vercel.app"; // ★公開時にURLを差し替え
 
 function generatePostText() {
   const r = activeRace(); if (!r) return "";
