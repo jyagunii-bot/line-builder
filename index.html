@@ -215,7 +215,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#e5243a}
           <option value="4">4</option><option value="5">5</option><option value="6">6</option>
           <option value="7">7</option><option value="8">8</option><option value="9">9</option>
         </select>
-        <div class="ac-wrapper"><input type="text" id="newName" placeholder="選手名（2文字で検索）" autocomplete="off"><div class="ac-list" id="acList"></div></div>
+        <div class="ac-wrapper"><input type="text" id="newName" placeholder="選手名で検索" autocomplete="off"><div class="ac-list" id="acList"></div></div>
         <select id="newSty">
           <option value="">脚質</option>
           <option value="逃">逃</option><option value="追">追</option><option value="両">両</option>
@@ -976,7 +976,7 @@ const PLAYER_DB = [{"n":"脇本雄太","s":118.214,"p":"福井","r":"S級S班","
   let matches = [];
 
   function search(q) {
-    if (!q || q.length < 2) return [];
+    if (!q || q.length < 1) return [];
     const parts = q.split(/[\s　]+/).filter(x => x);
     if (parts.length === 0) return [];
     return PLAYER_DB.filter(p => {
@@ -1052,7 +1052,7 @@ const PLAYER_DB = [{"n":"脇本雄太","s":118.214,"p":"福井","r":"S級S班","
   input.addEventListener("input", () => {
     if (selecting) return;
     const q = input.value.trim();
-    if (q.length < 2) { closeList(); return; }
+    if (q.length < 1) { closeList(); return; }
     matches = search(q);
     activeIdx = -1;
     renderList();
