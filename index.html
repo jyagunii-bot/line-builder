@@ -296,7 +296,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#e5243a}
         <strong>使い方</strong><br>
         1. 画面上部の「+ 新しいレースを作成」ボタンでレースを作成します<br>
         2. レース情報（開催場・R番号・グレード）を入力します<br>
-        3. 出走表を見ながら、車番を選択し選手名を入力します（2文字以上でデータベースから候補が表示されます）<br>
+        3. 出走表を見ながら、車番を選択し選手名を入力します（1文字からデータベースの候補が表示されます）<br>
         4. 脚質を選択し、競走得点を確認して「追加」を押します<br>
         5. 全選手を登録したら、未配置エリアから各ラインへ選手をドラッグ&ドロップで配置します（スマホではタップで選手を選択→ラインをタップで配置）<br>
         6. ライン内の並び順もドラッグで自由に入れ替えられます（スマホでは選手タップ→入れ替え先の選手をタップ。ダブルクリックまたは再タップで選択解除）<br>
@@ -305,7 +305,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:#e5243a}
       </div>
       <div class="guide-text">
         <strong>共有・保存ボタンについて</strong><br>
-        ・<strong>「Xで投稿」</strong> — ライン構成の画像を自動でクリップボードにコピーし、Xの投稿画面を開きます。投稿画面でCtrl+V（スマホは長押し→ペースト）で画像を貼り付けてください<br>
+        ・<strong>「Xで投稿」</strong> — 1回目のタップで並び画像を保存します（PCはダウンロード＆クリップボードコピー、スマホは画像が開くので長押しで保存）。2回目のタップでXの投稿画面が開くので、保存した画像を添付して投稿してください<br>
         ・<strong>「並び画像を保存」</strong> — ライン構成の画像をPNGファイルとしてダウンロードします。X以外のSNSやLINE等で自由にお使いください<br>
         ・<strong>「投稿テキストをコピー」</strong> — ライン平均得点のテキストをクリップボードにコピーします。画像なしでテキストだけ投稿したい場合に<br>
         ・<strong>「このレースを保存」</strong> — レースデータをブラウザに保存します。次回アクセス時に「保存済みレース」から読み込めます
@@ -837,18 +837,28 @@ function captureNarabi(callback) {
   const area = document.getElementById("narabiArea");
   const container = area.querySelector(".lines-container");
   const hideEls = area.querySelectorAll(".narabi-header button, .line-move");
-  // 撮影用にボタン非表示＆横並び強制
   hideEls.forEach(el => el.style.visibility = "hidden");
   const origWrap = container.style.flexWrap;
-  const origWidth = area.style.minWidth;
+  const origW = area.style.width;
+  const origMinW = area.style.minWidth;
+  const origPos = area.style.position;
+  const origLeft = area.style.left;
+  // PC同等レイアウトで撮影：横並び強制＋幅を920px（960-padding）に固定
   container.style.flexWrap = "nowrap";
-  area.style.minWidth = "max-content";
-  html2canvas(area, { backgroundColor: "#f8f8f8", scale: 2 }).then(canvas => {
-    // 元に戻す
-    hideEls.forEach(el => el.style.visibility = "");
-    container.style.flexWrap = origWrap;
-    area.style.minWidth = origWidth;
-    callback(canvas);
+  area.style.width = "920px";
+  area.style.minWidth = "920px";
+  area.style.position = "absolute";
+  area.style.left = "-9999px";
+  requestAnimationFrame(() => {
+    html2canvas(area, { backgroundColor: "#f8f8f8", scale: 2, windowWidth: 960 }).then(canvas => {
+      hideEls.forEach(el => el.style.visibility = "");
+      container.style.flexWrap = origWrap;
+      area.style.width = origW;
+      area.style.minWidth = origMinW;
+      area.style.position = origPos;
+      area.style.left = origLeft;
+      callback(canvas);
+    });
   });
 }
 
@@ -873,43 +883,65 @@ document.getElementById("copyTextBtn").addEventListener("click", () => {
 });
 
 document.getElementById("postXBtn").addEventListener("click", () => {
-  const text = generateXPostText();
-  const xUrl = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
-  // まずX投稿画面を同期的に開く（ポップアップブロック回避）
-  const xWindow = window.open(xUrl, "_blank");
-  // その後画像を保存
+  const btn = document.getElementById("postXBtn");
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  // 2段階方式：まず画像をコピー/保存、次にXを開く
+  if (btn.dataset.ready === "1") {
+    // 2回目クリック：Xを開く
+    const text = generateXPostText();
+    const xUrl = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
+    window.open(xUrl, "_blank");
+    btn.dataset.ready = "0";
+    btn.textContent = "Xで投稿";
+    return;
+  }
+  // モバイル：ポップアップブロック回避のため同期的に空タブを開く
+  let imgWindow = null;
+  if (isMobile) {
+    imgWindow = window.open("about:blank", "_blank");
+  }
+  // 1回目クリック：画像をコピー＆保存
   captureNarabi(canvas => {
     canvas.toBlob(blob => {
-      let saved = false;
-      if (blob && navigator.clipboard && window.ClipboardItem) {
-        navigator.clipboard.write([new ClipboardItem({"image/png": blob})]).then(() => {
-          const btn = document.getElementById("postXBtn");
-          const orig = btn.textContent;
-          btn.textContent = "画像をコピーしました（貼り付けで添付）";
-          setTimeout(() => { btn.textContent = orig; }, 4000);
-        }).catch(() => {
-          // クリップボード失敗 → ダウンロード
+      if (!blob) return;
+      const r = activeRace();
+      const fname = (r ? (r.name + "_" + r.num).replace(/\s/g, "_") : "line") + ".png";
+      const setReady = (msg) => {
+        btn.textContent = msg;
+        btn.dataset.ready = "1";
+        setTimeout(() => { if (btn.dataset.ready === "1") { btn.dataset.ready = "0"; btn.textContent = "Xで投稿"; } }, 15000);
+      };
+      if (isMobile) {
+        // モバイル：開いておいた空タブに画像を表示（長押し保存してもらう）
+        const blobUrl = URL.createObjectURL(blob);
+        if (imgWindow) {
+          imgWindow.location.href = blobUrl;
+        } else {
           const link = document.createElement("a");
-          const r = activeRace();
-          link.download = (r ? (r.name + "_" + r.num).replace(/\s/g, "_") : "line") + ".png";
-          link.href = canvas.toDataURL("image/png");
+          link.download = fname;
+          link.href = blobUrl;
           link.click();
-          const btn = document.getElementById("postXBtn");
-          const orig = btn.textContent;
-          btn.textContent = "画像を保存しました（手動で添付してください）";
-          setTimeout(() => { btn.textContent = orig; }, 4000);
-        });
+        }
+        setReady("画像を保存→もう一度押してXを開く");
       } else {
-        // ClipboardItem非対応 → ダウンロード
-        const link = document.createElement("a");
-        const r = activeRace();
-        link.download = (r ? (r.name + "_" + r.num).replace(/\s/g, "_") : "line") + ".png";
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-        const btn = document.getElementById("postXBtn");
-        const orig = btn.textContent;
-        btn.textContent = "画像を保存しました（手動で添付してください）";
-        setTimeout(() => { btn.textContent = orig; }, 4000);
+        // PC：まずクリップボードコピーを試みる（フォーカスがある状態で）
+        const doDownload = () => {
+          const link = document.createElement("a");
+          link.download = fname;
+          link.href = URL.createObjectURL(blob);
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+          setReady("画像を保存しました！もう一度押してXを開く");
+        };
+        if (navigator.clipboard && window.ClipboardItem) {
+          navigator.clipboard.write([new ClipboardItem({"image/png": blob})]).then(() => {
+            setReady("画像コピー済み！もう一度押してXを開く");
+          }).catch(() => {
+            doDownload();
+          });
+        } else {
+          doDownload();
+        }
       }
     }, "image/png");
   });
