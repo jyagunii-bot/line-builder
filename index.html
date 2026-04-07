@@ -956,7 +956,10 @@ function generatePostText() {
   let t = "";
   const title = [r.name, r.num, r.grade].filter(Boolean).join(" ");
   if (title) t += `【${title}】\n`;
-  t += `\n#10KLB\n${SITE_URL}`;
+  if (r.memo.trim()) {
+    t += `\n${r.memo.trim()}\n`;
+  }
+  t += `\n#10KLB`;
   return t;
 }
 
@@ -965,7 +968,10 @@ function generateXPostText() {
   let t = "";
   const title = [r.name, r.num, r.grade].filter(Boolean).join(" ");
   if (title) t += `【${title}】\n`;
-  t += `\n#10KLB\n${SITE_URL}`;
+  if (r.memo.trim()) {
+    t += `\n${r.memo.trim()}\n`;
+  }
+  t += `\n#10KLB`;
   return t;
 }
 
